@@ -36,9 +36,9 @@ public class Main extends InputAdapter implements ApplicationListener {
     static class Koala {
         static float WIDTH;
         static float HEIGHT;
-        static float MAX_VELOCITY = 40f;
-        static float JUMP_VELOCITY = 60f;
-        static float DAMPING = 0.87f;
+        static float MAX_VELOCITY = 20f;
+        static float JUMP_VELOCITY = 40f;
+        static float DAMPING = 0.8f;
 
         enum State {
             Standing, Walking, Jumping
@@ -75,13 +75,36 @@ public class Main extends InputAdapter implements ApplicationListener {
 
     @Override
     public void create () {
-        // load the koala frames, split them, and assign them to Animations
-        koalaTexture = new Texture("gato.png");
-        TextureRegion[] regions = TextureRegion.split(koalaTexture, 18, 26)[0];
-        stand = new Animation<TextureRegion>(0, regions[0]);
-        jump = new Animation<TextureRegion>(0, regions[1]);
-        walk = new Animation<TextureRegion>(0.15f, regions[2], regions[3], regions[4]);
-        walk.setPlayMode(Animation.PlayMode.LOOP_PINGPONG);
+        // Cargar la textura y obtener sus dimensiones
+        koalaTexture = new Texture("owl_vander.png");
+        int totalWidth = koalaTexture.getWidth();
+        int totalHeight = koalaTexture.getHeight();
+        Gdx.app.log("DEBUG", "Ancho total: " + totalWidth + ", Alto total: " + totalHeight);
+
+        // Supongamos que el sprite sheet tiene 12 frames en una única fila
+        int numeroFrames = 12;
+        int anchoFrame = totalWidth / numeroFrames;
+        int altoFrame = totalHeight;
+
+        // Dividir la textura en una matriz de TextureRegion usando los valores calculados
+        TextureRegion[][] tempRegions = TextureRegion.split(koalaTexture, anchoFrame, altoFrame);
+        Gdx.app.log("DEBUG", "Filas: " + tempRegions.length + ", Columnas en la primera fila: " + (tempRegions.length > 0 ? tempRegions[0].length : 0));
+
+        // Usamos la primera fila de la matriz, ya que se asume que todos los frames están en esa fila
+        TextureRegion[] regions = tempRegions[0];
+
+        // Verificar si hay al menos una región
+        if (regions.length > 0) {
+            // Asigna la animación para el estado "stand" usando el primer frame
+            stand = new Animation<TextureRegion>(0, regions[0]);
+            // Asigna la animación para el estado "jump" usando el segundo frame
+            jump = new Animation<TextureRegion>(0, regions[1]);
+            // Asigna la animación para "walk" usando, por ejemplo, los siguientes tres frames
+            walk = new Animation<TextureRegion>(0.15f, regions[2], regions[3], regions[4]);
+            walk.setPlayMode(Animation.PlayMode.LOOP_PINGPONG);
+        } else {
+            Gdx.app.error("ERROR", "No se obtuvieron regiones de la textura. Revisa el archivo y las dimensiones.");
+        }
 
         // figure out the width and height of the koala for collision
         // detection and rendering by converting a koala frames pixel
